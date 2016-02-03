@@ -59,9 +59,8 @@ class Monitor:
             filename = "{}/{}.csv".format(symbol, symbol)
             data = [datestamp, timestamp] + info[1:]
             self.log_data(filename, data)
-            self.log_data(portfolio_log,
-                          [symbol] + [datestamp, timestamp] + info[1:],
-                          data)
+            self.log_data(self.portfolio_log,
+                          [symbol] + [datestamp, timestamp] + info[1:])
 
     def monitor_stocks(self):
         url = self.format_data()
