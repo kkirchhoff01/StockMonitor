@@ -11,7 +11,7 @@ class Monitor:
     def __init__(self):
         self.portfolio_log = "portfolio_log.csv"
         self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
-        for foler in self.stocks:
+        for folder in self.stocks:
             if not os.path.exists(folder):
                 os.makedirs(folder)
 
