@@ -62,8 +62,7 @@ class Monitor:
         for line in results.split('\n'):
             info = line.split(',')
             symbol = info[0].strip('"')
-            try:
-                filename = "{0}/{0}.csv".format(symbol)
+            filename = "{0}/{0}.csv".format(symbol)
             data = [datestamp, timestamp] + info[1:]
             self.log_data(filename, data)
             self.log_data(self.portfolio_log,
