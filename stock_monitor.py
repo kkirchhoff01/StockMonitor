@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import csv
+import os
 import urllib
 import time
 from matplotlib import pyplot as plt
@@ -10,6 +11,9 @@ class Monitor:
     def __init__(self):
         self.portfolio_log = "portfolio_log.csv"
         self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
+        for foler in self.stocks:
+            if not os.path.exists(folder):
+                os.makedirs(folder)
 
     def get_portfolio(self):
         stock_info = {}
@@ -58,7 +62,8 @@ class Monitor:
         for line in results.split('\n'):
             info = line.split(',')
             symbol = info[0].strip('"')
-            filename = "{0}/{0}.csv".format(symbol)
+            try:
+                filename = "{0}/{0}.csv".format(symbol)
             data = [datestamp, timestamp] + info[1:]
             self.log_data(filename, data)
             self.log_data(self.portfolio_log,
