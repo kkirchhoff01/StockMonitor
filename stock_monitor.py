@@ -11,7 +11,7 @@ class Monitor:
         self.portfolio_log = "portfolio_log.csv"
         self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
 
-    def get_porfolio(self):
+    def get_portfolio(self):
         stock_info = {}
         with open('portfolio.csv', 'rb') as fh:
             reader = csv.reader(fh, delimiter=',')
