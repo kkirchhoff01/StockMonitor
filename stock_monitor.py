@@ -43,7 +43,9 @@ class Monitor:
 
     def is_open(self):
         now = time.localtime(time.time())
-        return(now[6] < 5 and now[3] in range(9, 15))
+        return(now[6] < 5 and
+               (now[3] in range(9, 15) or
+               (now[3] == 8 and now[4] >= 30)))
 
     def get_data(self, url):
         response = urllib.urlopen(url)
@@ -56,7 +58,7 @@ class Monitor:
         for line in results.split('\n'):
             info = line.split(',')
             symbol = info[0].strip('"')
-            filename = "{}/{}.csv".format(symbol, symbol)
+            filename = "{0}/{0}.csv".format(symbol)
             data = [datestamp, timestamp] + info[1:]
             self.log_data(filename, data)
             self.log_data(self.portfolio_log,
