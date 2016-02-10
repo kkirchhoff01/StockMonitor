@@ -3,12 +3,19 @@
 import sqlite3
 import urllib
 import time
+import os
 
 
 class MonitorSQL:
     def __init__(self):
+        db_dir = os.getcwd() + '/db'
+        db_path = db_dir + '/stocks.db'
+        if not os.path.exists(db_dir):
+            print 'Creating database directory'
+            os.makedirs(os.getcwd() + '/db')
+
         self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
-        self.conn = sqlite3.connect(database='stocks.db')
+        self.conn = sqlite3.connect(database=db_path)
         self.curr = self.conn.cursor()
 
         for stock in self.stocks:
