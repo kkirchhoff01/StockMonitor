@@ -66,8 +66,21 @@ class MonitorSQL:
             elif self.get_time(3) == 15 and self.get_time(4) <= 10:
                 if self.get_time(6) < 5:
                     self.get_data(url)
+                    self.conn.commit()
             time.sleep(600)
 
+    def stop_monitor(self):
+        self.conn.commit()
+        self.curr.close()
+        self.conn.close()
+
 if __name__ == "__main__":
+    import sys
+
     monitor = MonitorSQL()
-    monitor.monitor_stocks()
+    try:
+        monitor.monitor_stocks()
+    except Exception, e:
+        monitor.stop_monitor()
+        print e
+        sys.exit()
