@@ -4,6 +4,7 @@ import sqlite3
 import urllib
 import time
 import os
+from matplotlib import pyplot as plt
 
 
 class MonitorSQL:
@@ -14,11 +15,13 @@ class MonitorSQL:
             print 'Creating database directory'
             os.makedirs(os.getcwd() + '/db')
 
-        self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
+        # self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
+        self.stocks = {"HON": 192, "GOOG": 27, "CMG": 44,
+                       "TSLA": 105, "V": 270}
         self.conn = sqlite3.connect(database=db_path)
         self.curr = self.conn.cursor()
 
-        for stock in self.stocks:
+        for stock in self.stocks.keys():
             self.curr.execute("""CREATE TABLE IF NOT EXISTS {0}(
                                     Time TEXT,
                                     Date TEXT,
@@ -35,7 +38,7 @@ class MonitorSQL:
     def format_data(self, options=["s", "l1"]):
         base_url = "http://finance.yahoo.com/d/quotes.csv?s="
         url = "{0}".format(base_url)
-        for key in self.stocks:
+        for key in self.stocks.keys():
             url = url + "{0}+".format(key)
         url = url[:-1] + "&f={0}".format(''.join(options))
         return url
@@ -77,9 +80,19 @@ class MonitorSQL:
             time.sleep(600)
 
     def stop_monitor(self):
-        self.conn.commit()
+        try:
+            self.conn.commit()
+        except:
+            self.conn.execute("rollback")
         self.curr.close()
         self.conn.close()
+
+    def plot_table(self, tables):
+        for table in tables:
+            self.curr.execute("SELECT Price FROM {0}".format(table))
+            data = self.curr.fetchall()
+            plt.plot([d[0]*self.shares[table] for d in data])
+        plt.show()
 
 if __name__ == "__main__":
     import sys
@@ -87,7 +100,7 @@ if __name__ == "__main__":
     monitor = MonitorSQL()
     try:
         monitor.monitor_stocks()
-    except Exception, e:
+    except Exception, err:
         monitor.stop_monitor()
-        print e
+        print err
         sys.exit()
