@@ -15,7 +15,6 @@ class MonitorSQL:
             print 'Creating database directory'
             os.makedirs(os.getcwd() + '/db')
 
-        # self.stocks = ["HON", "GOOG", "CMG", "TSLA", "V"]
         self.stocks = {"HON": 192, "GOOG": 27, "CMG": 44,
                        "TSLA": 105, "V": 270}
         self.conn = sqlite3.connect(database=db_path)
