@@ -7,9 +7,9 @@ This script uses an SQLite database. I prefer this method and will update it mor
 
 Each table is a unique stock symbol, which has the format:
 
-    | Time  | Date  | Quote  |
-    | ----- |:-----:|-------:|
-    | H:M:S | D/M/Y | $XX.XX |
+    | Time   | Date   | Quote   |
+    | ------ | ------ | ------- |
+    | H:M:S  | D/M/Y  | $XX.XX  |
 
 To run with a quote frequency of 10 minutes:
 
