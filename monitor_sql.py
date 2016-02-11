@@ -82,7 +82,8 @@ class MonitorSQL:
         return rows
 
     # Main loop
-    def monitor_stocks(self):
+    # Quotes are fetched every 10 minutes by default
+    def monitor_stocks(self, freq=600):
         url = self.format_data()  # Get URL
 
         while 1:
@@ -99,8 +100,8 @@ class MonitorSQL:
                     # Commit transaction at end of day
                     self.conn.commit()
 
-            # Wait 10 minutes to fetch new quote
-            time.sleep(600)
+            # Wait to fetch new quote
+            time.sleep(freq)
 
     # Stop process and commit if program is terminated
     # Roll back if commit fails
