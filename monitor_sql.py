@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import sqlite3
 import urllib
 import time
@@ -10,7 +9,7 @@ from matplotlib import pyplot as plt
 class MonitorSQL:
     def __init__(self):
         db_dir = os.getcwd() + '/db'
-        db_path = db_dir + '/stocks.db'
+        db_path = db_dir + '/Stocks.db'
         if not os.path.exists(db_dir):
             print 'Creating database directory'
             os.makedirs(os.getcwd() + '/db')
@@ -87,10 +86,26 @@ class MonitorSQL:
         self.conn.close()
 
     def plot_table(self, tables):
+        dates = []
         for table in tables:
-            self.curr.execute("SELECT Price FROM {0}".format(table))
+            self.curr.execute("SELECT Price, Date FROM {0}".format(table))
             data = self.curr.fetchall()
-            plt.plot([d[0]*self.shares[table] for d in data])
+            dates = [d[1] for d in data]
+            plt.plot([d[0]*self.stocks[table] for d in data], label=table)
+        
+        date_indices = []
+        i = 0
+        for d in dates:
+            if d not in [di[0] for di in date_indices]:
+                date_indices.append((d, i))
+            i += 1
+
+        plt.grid(True)
+        plt.legend()
+        plt.title('Goldman Stock Chart')
+        plt.ylabel('value of Shares')
+        plt.xlabel('Time')
+        plt.xticks([d[1] for d in date_indices], [d[0] for d in date_indices], rotation='vertical')
         plt.show()
 
 if __name__ == "__main__":
