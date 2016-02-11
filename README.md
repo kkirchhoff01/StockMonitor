@@ -3,7 +3,7 @@ Program to fetch and store stock quotes from Yahoo! finance. It can store the qu
 
 ## stock_monitor.py
 
-This script is used to fetch the quotes and store them in CSV files. This script is mostly for my FIN 301 class, which requires data in the form of Excell spreadsheets.
+This script is used to fetch the quotes and store them in CSV files. It is mostly for my FIN 301 class, which requires data in the form of Excell spreadsheets.
 
 To use:
 
@@ -11,9 +11,9 @@ To use:
 
 ## monitor_sql.py
 
-This script uses an SQLite database. I prefer this method and will update the script more frequently.
+This script uses an SQLite database. I prefer this method and will update it more frequently.
 
-To run either script with a quote frequency of 10 minutes:
+To run with a quote frequency of 10 minutes:
 
     ./monitor_sql.py
 
