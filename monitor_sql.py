@@ -131,15 +131,18 @@ class MonitorSQL:
                 date_indices.append((d, i))
             i += 1
 
+        # Plot settings
         plt.grid(True)
-        plt.legend()
+        plt.legend(loc=3)
         plt.title('Goldman Stock Chart')
         plt.ylabel('value of Shares')
         plt.xlabel('Time')
+
         # x axis labels
         plt.xticks([d[1] for d in date_indices],
                    [d[0] for d in date_indices],
                    rotation='vertical')
+
         plt.show()
 
 if __name__ == "__main__":
