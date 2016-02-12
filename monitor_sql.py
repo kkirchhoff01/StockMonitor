@@ -37,7 +37,7 @@ class MonitorSQL:
         self.curr.execute("""INSERT INTO {0} VALUES
                                 (?, ?, ?);""".format(stock_name),
                           (time.strftime('%X'),  # Time when quote was taken
-                           time.strftime("%d/%M/%Y",  # Date quote was taken
+                           time.strftime("%d/%m/%y",  # Date quote was taken
                                          time.localtime(time.time())),
                            price))  # Quote
 
