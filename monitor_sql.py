@@ -63,7 +63,7 @@ class MonitorSQL:
     def is_open(self):
         now = time.localtime(time.time())
         return(now[6] < 5 and
-               (now[3] in range(9, 15) or
+               (9 <= now[3] <= 15 or
                (now[3] == 8 and now[4] >= 30)))
 
     # Retrieve quote from Yahoo! finance and insert into table
@@ -88,20 +88,27 @@ class MonitorSQL:
 
         while 1:
 
+            # Get time at beginning of loop
+            begin = time.time()
+
             # If market is open get quote
             if self.is_open():
                 self.get_data(url)
+                # Commit transaction
+                self.conn.commit()
 
-            # Get closing price less than 10 minutes ater close
-            # Need to fix inaccuracy from after market trading
-            elif self.get_time(3) == 15 and self.get_time(4) <= 10:
+            # Get closing price when after-market trading is finished
+            elif self.get_time(3) == 17 and 30 <= self.get_time(4) <= 40:
                 if self.get_time(6) < 5:
                     self.get_data(url)
                     # Commit transaction at end of day
                     self.conn.commit()
 
-            # Wait to fetch new quote
-            time.sleep(freq)
+            # Find how long loop took to process
+            process_time = time.time() - begin
+            # Wait for designated freq time and consider processing time
+            if process_time < freq:
+                time.sleep(freq - process_time)
 
     # Stop process and commit if program is terminated
     # Roll back if commit fails
