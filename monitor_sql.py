@@ -8,13 +8,13 @@ from matplotlib import pyplot as plt
 
 class MonitorSQL:
     def __init__(self):
-        db_dir = os.getcwd() + '/db'  # Database located in cwd/db/
-        db_path = db_dir + '/Stocks.db'  # Datebase name
+        db_dir = os.path.join(os.getcwd(), 'db')  # Database located in db/
+        db_path = os.path.join(db_dir, 'Stocks.db')  # Datebase name
 
         # Check for database path and create directory if not found
         if not os.path.exists(db_dir):
             print 'Creating database directory'
-            os.makedirs(os.getcwd() + '/db')
+            os.makedirs(db_dir)
 
         # Dictionary to hold portfolio
         self.stocks = {"HON": 192, "GOOG": 27, "CMG": 44,
@@ -140,7 +140,7 @@ class MonitorSQL:
 
         # x axis labels
         plt.xticks([d[1] for d in date_indices],
-                   [d[0] for d in date_indices],
+                   [d[0][:-5] for d in date_indices],
                    rotation='vertical')
 
         plt.show()
