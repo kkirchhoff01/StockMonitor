@@ -76,8 +76,8 @@ class MonitorSQL:
             self.insert_quote(info[0].strip('"'), float(info[1]))
 
     # Get all data from table
-    def get_table(self, table_name):
-        self.curr.execute("SELECT * FROM {0}".format(table_name))
+    def get_table(self, table_name, attr=['*']):
+        self.curr.execute("SELECT {0} FROM {1}".format(','.join(attr), table_name))
         rows = self.curr.fetchall()
         return rows
 
@@ -125,8 +125,7 @@ class MonitorSQL:
         dates = []
         for table in tables:
             # Get dates for x axis labels
-            self.curr.execute("SELECT Price, Date FROM {0}".format(table))
-            data = self.curr.fetchall()
+            data = self.get_table(table, ['Price', 'Date'])
             dates = [d[1] for d in data]
             plt.plot([d[0]*self.stocks[table] for d in data], label=table)
 
