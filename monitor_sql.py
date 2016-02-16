@@ -77,7 +77,9 @@ class MonitorSQL:
 
     # Get all data from table
     def get_table(self, table_name, attr=['*']):
-        self.curr.execute("SELECT {0} FROM {1}".format(','.join(attr), table_name))
+        self.curr.execute("SELECT {0} FROM {1}".format(
+                                ','.join(attr), table_name))
+
         rows = self.curr.fetchall()
         return rows
 
