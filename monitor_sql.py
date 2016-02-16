@@ -63,7 +63,7 @@ class MonitorSQL:
     def is_open(self):
         now = time.localtime(time.time())
         return(now[6] < 5 and
-               (9 <= now[3] <= 15 or
+               (9 <= now[3] < 15 or
                (now[3] == 8 and now[4] >= 30)))
 
     # Retrieve quote from Yahoo! finance and insert into table
@@ -100,7 +100,7 @@ class MonitorSQL:
                 self.conn.commit()
 
             # Get closing price when after-market trading is finished
-            elif self.get_time(3) == 17 and 30 <= self.get_time(4) <= 40:
+            elif self.get_time(3) == 17 and 30 < self.get_time(4) <= 40:
                 if self.get_time(6) < 5:
                     self.get_data(url)
                     # Commit transaction at end of day
