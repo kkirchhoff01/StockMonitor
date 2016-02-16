@@ -75,9 +75,9 @@ class MonitorSQL:
             info = line.split(',')
             self.insert_quote(info[0].strip('"'), float(info[1]))
 
-    # Get all data from table
+    # Get data from table with specified attributes (all by default)
     def get_table(self, table_name, attr=['*']):
-        self.curr.execute("SELECT {0} FROM {1}".format(
+        self.curr.execute("SELECT {0} FROM {1};".format(
                                 ','.join(attr), table_name))
 
         rows = self.curr.fetchall()
@@ -155,6 +155,7 @@ class MonitorSQL:
 
 if __name__ == "__main__":
     import sys
+    import traceback
 
     # Init monitor
     monitor = MonitorSQL()
@@ -162,7 +163,10 @@ if __name__ == "__main__":
     # Monitor until script is stopped
     try:
         monitor.monitor_stocks()
-    except Exception, err:
+    except KeyboardInterrupt:
         monitor.stop_monitor()
-        print err
-        sys.exit()
+        sys.exit(0)
+    except:
+        monitor.stop_monitor()
+        traceback.print_exc()
+        sys.exit(1)
