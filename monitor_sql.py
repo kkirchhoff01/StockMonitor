@@ -13,7 +13,7 @@ class MonitorSQL:
 
         # Check for database path and create directory if not found
         if not os.path.exists(db_dir):
-            print 'Creating database directory'
+            print('Creating database directory')
             os.makedirs(db_dir)
 
         # Dictionary to hold portfolio
@@ -79,7 +79,7 @@ class MonitorSQL:
                 self.insert_quote(info[0].strip('"'), float(info[1]))
 
             # Yahoo sometimes returns bad data
-            # Running get_data again should solves the problem
+            # Running get_data again solves the problem
             except IndexError:
                 self.get_data(url)
 
