@@ -73,7 +73,14 @@ class MonitorSQL:
 
         for line in results.split('\n'):
             info = line.split(',')
-            self.insert_quote(info[0].strip('"'), float(info[1]))
+            try:
+                self.insert_quote(info[0].strip('"'), float(info[1]))
+            except IndexError:
+                self.get_data(url)
+            except:
+                traceback.print_exc()
+                pass
+
 
     # Get data from table with specified attributes (all by default)
     def get_table(self, table_name, attr=['*']):
