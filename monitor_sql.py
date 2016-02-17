@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sqlite3
-import urllib
+import requests
 import time
 import os
 from matplotlib import pyplot as plt
@@ -68,8 +68,8 @@ class MonitorSQL:
 
     # Retrieve quote from Yahoo! finance and insert into table
     def get_data(self, url):
-        response = urllib.urlopen(url)
-        results = response.read()[:-1]
+        response = requests.get(url)  # urllib.urlopen(url)
+        results = response.text[:-1]
 
         for line in results.split('\n'):
             info = line.split(',')
