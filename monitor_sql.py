@@ -34,6 +34,8 @@ class MonitorSQL:
 
     # Function to insert attributes into table
     def insert_quote(self, stock_name, price):
+        assert(stock_name in self.stocks.keys())
+        assert(type(price) == float)
         self.curr.execute("""INSERT INTO {0} VALUES
                                 (?, ?, ?);""".format(stock_name),
                           (time.strftime('%X'),  # Time when quote was taken
@@ -68,7 +70,7 @@ class MonitorSQL:
 
     # Retrieve quote from Yahoo! finance and insert into table
     def get_data(self, url):
-        response = requests.get(url)  # urllib.urlopen(url)
+        response = requests.get(url)
         results = response.text[:-1]
 
         for line in results.split('\n'):
@@ -85,6 +87,7 @@ class MonitorSQL:
 
     # Get data from table with specified attributes (all by default)
     def get_table(self, table_name, attr=['*']):
+        assert(table_name in self.stocks.keys())
         self.curr.execute("SELECT {0} FROM {1};".format(
                                 ','.join(attr), table_name))
 
@@ -132,6 +135,7 @@ class MonitorSQL:
 
     # Plot total value of stock(s) from table
     def plot_table(self, tables):  # tables variable must be a list
+        assert(type(tables) == list)
         dates = []
         for table in tables:
             # Get dates for x axis labels
