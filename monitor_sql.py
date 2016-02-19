@@ -34,8 +34,10 @@ class MonitorSQL:
 
     # Function to insert attributes into table
     def insert_quote(self, stock_name, price):
+        # Check to make sure proper data is being passed
         assert(stock_name in self.stocks.keys())
         assert(type(price) == float)
+
         self.curr.execute("""INSERT INTO {0} VALUES
                                 (?, ?, ?);""".format(stock_name),
                           (time.strftime('%X'),  # Time when quote was taken
@@ -46,11 +48,15 @@ class MonitorSQL:
     # Format url to get quote from Yahoo! finance
     # Default options are to recieve the symbol and price
     def format_data(self, options=["s", "l1"]):
-        base_url = "http://finance.yahoo.com/d/quotes.csv?s="
-        url = "{0}".format(base_url)
+        url = "http://finance.yahoo.com/d/quotes.csv?s="
+
+        # Add stock symbols to URL
         for key in self.stocks.keys():
             url = url + "{0}+".format(key)
-        url = url[:-1] + "&f={0}".format(''.join(options))
+
+        # Add options to URL (and remove extra '+'
+        url = "{0}&f={1}".format(url[:-1], ''.join(options))
+
         return url
 
     # Get local time
@@ -87,7 +93,9 @@ class MonitorSQL:
 
     # Get data from table with specified attributes (all by default)
     def get_table(self, table_name, attr=['*']):
+        # Make sure proper data is being passed
         assert(table_name in self.stocks.keys())
+
         self.curr.execute("SELECT {0} FROM {1};".format(
                                 ','.join(attr), table_name))
 
@@ -135,7 +143,9 @@ class MonitorSQL:
 
     # Plot total value of stock(s) from table
     def plot_table(self, tables):  # tables variable must be a list
+        # Check for proper data type
         assert(type(tables) == list)
+
         dates = []
         for table in tables:
             # Get dates for x axis labels
@@ -157,6 +167,7 @@ class MonitorSQL:
         plt.title('Goldman Stock Chart')
         plt.ylabel('value of Shares')
         plt.xlabel('Time')
+        plt.tight_layout()
 
         # x axis labels
         plt.xticks([d[1] for d in date_indices],
