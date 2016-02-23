@@ -36,7 +36,7 @@ class MonitorSQL:
     def insert_quote(self, stock_name, price):
         # Check to make sure proper data is being passed
         assert(stock_name in self.stocks.keys())
-        assert(type(price) == float)
+        assert(type(price) is float)
 
         self.curr.execute("""INSERT INTO {0} VALUES
                                 (?, ?, ?);""".format(stock_name),
@@ -60,7 +60,7 @@ class MonitorSQL:
         return url
 
     # Get local time
-    def get_time(self, tm):  # tm: index of time attribute
+    def get_time(self, tm=-1):  # tm: index of time attribute
         try:
             return time.localtime(time.time())[tm]
         except IndexError:
@@ -144,7 +144,7 @@ class MonitorSQL:
     # Plot total value of stock(s) from table
     def plot_table(self, tables):  # tables variable must be a list
         # Check for proper data type
-        assert(type(tables) == list)
+        assert(type(tables) is list)
 
         dates = []
         for table in tables:
