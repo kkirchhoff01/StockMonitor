@@ -27,8 +27,6 @@ class MonitorSQL:
         pcurr.close()
         pconn.close()
 
-        print self.stocks
-
         # Connect to database
         self.conn = sqlite3.connect(database=db_path)
         self.curr = self.conn.cursor()
@@ -36,6 +34,7 @@ class MonitorSQL:
         # Create tables if they don't exist
         for stock in self.stocks.keys():
             self.curr.execute("""CREATE TABLE IF NOT EXISTS {0}(
+                                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     Time TEXT,
                                     Date TEXT,
                                     Price REAL
@@ -45,9 +44,9 @@ class MonitorSQL:
     def insert_quote(self, stock_name, price):
         # Check to make sure proper data is being passed
         assert(stock_name in self.stocks.keys())
-        assert(type(price) is float)
+        assert(isinstance(price, float))
 
-        self.curr.execute("""INSERT INTO {0} VALUES
+        self.curr.execute("""INSERT INTO {0} (Time, Date, Price) VALUES
                                 (?, ?, ?);""".format(stock_name),
                           (time.strftime('%X'),  # Time when quote was taken
                            time.strftime("%d/%m/%Y",  # Date quote was taken
@@ -69,7 +68,7 @@ class MonitorSQL:
         return url
 
     # Get local time
-    def get_time(self, tm=-1):  # tm: index of time attribute
+    def get_time(self, tm):  # tm: index of time attribute
         try:
             return time.localtime(time.time())[tm]
         except IndexError:
@@ -101,7 +100,7 @@ class MonitorSQL:
                 self.get_data(url)
 
     # Get data from table with specified attributes (all by default)
-    def get_table(self, table_name, curr, attr=['*']):
+    def get_table(self, table_name, attr=['*']):
         # Make sure proper data is being passed
         # assert(table_name in self.stocks.keys())
 
@@ -110,6 +109,12 @@ class MonitorSQL:
 
         rows = self.curr.fetchall()
         return rows
+
+    def get_last_quote(self, table_name, attr=['*']):
+        self.curr.execute("""select {0} from {1}
+                             where id=(select max(id) from {1});""".format(
+                                                ','.join(attr), table_name))
+        return self.curr.fetchall()
 
     # Main loop
     # Quotes are fetched every 10 minutes by default
@@ -153,12 +158,12 @@ class MonitorSQL:
     # Plot total value of stock(s) from table
     def plot_table(self, tables):  # tables variable must be a list
         # Check for proper data type
-        assert(type(tables) is list)
+        assert(isinstance(tables, list))
 
         dates = []
         for table in tables:
             # Get dates for x axis labels
-            data = self.get_table(table, ['Price', 'Date'], self.curr)
+            data = self.get_table(table, ['Price', 'Date'])
             dates = [d[1] for d in data]
             plt.plot([d[0]*self.stocks[table] for d in data], label=table)
 
