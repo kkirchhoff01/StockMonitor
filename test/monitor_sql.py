@@ -120,6 +120,7 @@ class MonitorSQL:
             self.curr.execute("""SELECT {1} FROM {0}
                                 WHERE Id=(SELECT MAX(Id) FROM {0});""".format(
                                     stock, attr))
+
             last_entry = self.curr.fetchone()
             if len(last_entry) == 0:
                 return '0:0:0'
@@ -142,7 +143,7 @@ class MonitorSQL:
         if self.get_last_quote('Date') == time.strftime("%d/%m/%Y", now):
             last_quote = self.get_last_quote('Time')  # Get time of last quote
 
-            # Get last quote time in intiger form
+            # Get last quote time in integer form
             hour, minute, second = map(lambda x: int(x), last_quote.split(':'))
 
             # Convert time since last quote to seconds
@@ -151,7 +152,7 @@ class MonitorSQL:
                           (now[5] - second))
 
             # If the last quote fetched was < 10 minutes ago, wait
-            if 0 <= time_since < 10:
+            if 0 < time_since < freq:
                 time.sleep(freq - time_since)
 
     # Main loop
