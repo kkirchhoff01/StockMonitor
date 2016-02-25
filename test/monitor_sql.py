@@ -110,15 +110,55 @@ class MonitorSQL:
         rows = self.curr.fetchall()
         return rows
 
-    def get_last_quote(self, table_name, attr=['*']):
-        self.curr.execute("""select {0} from {1}
-                             where id=(select max(id) from {1});""".format(
-                                                ','.join(attr), table_name))
-        return self.curr.fetchall()
+    # Function to get the time or date from the last quote fetched
+    # The attribute comes from the last row in the stocks db
+    def get_last_quote(self, attr):
+        last_time = ''  # Last quote time or date
+        i = 0
+        for stock in self.stocks.keys():
+            # Get last row from stock table
+            self.curr.execute("""SELECT {1} FROM {0}
+                                WHERE Id=(SELECT MAX(Id) FROM {0});""".format(
+                                    stock, attr))
+            last_entry = self.curr.fetchone()
+            if len(last_entry) == 0:
+                return '0:0:0'
+
+            if i == 0:
+                # Set last_time
+                last_time = last_entry[0]
+            else:
+                # Assert that table entries are consistant
+                assert(last_time == last_entry[0])
+
+        return last_time
+
+    # Function to wait until the time limit (freq)
+    # Used for restarting script
+    def wait_from_last(self, freq=600):
+        now = time.localtime(time.time())
+
+        # If the monitor is restarted on the same day
+        if self.get_last_quote('Date') == time.strftime("%d/%m/%Y", now):
+            last_quote = self.get_last_quote('Time')  # Get time of last quote
+
+            # Get last quote time in intiger form
+            hour, minute, second = map(lambda x: int(x), last_quote.split(':'))
+
+            # Convert time since last quote to seconds
+            time_since = (60*60*(now[3] - hour) +
+                          60*(now[4] - minute) +
+                          (now[5] - second))
+
+            # If the last quote fetched was < 10 minutes ago, wait
+            if 0 <= time_since < 10:
+                time.sleep(freq - time_since)
 
     # Main loop
     # Quotes are fetched every 10 minutes by default
     def monitor_stocks(self, freq=600):
+        self.wait_from_last(freq)
+
         url = self.format_data()  # Get URL
 
         while 1:
