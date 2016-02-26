@@ -28,7 +28,7 @@ class MonitorSQL:
         with open(file_path) as csvfile:
             csvreader = csv.reader(csvfile, delimiter=',')
             for row in csvreader:
-                self.stocks[row[0]] = row[1]
+                self.stocks[row[0]] = int(row[1])
 
     # Function to insert attributes into table
     def insert_quote(self, stock_name, price):
@@ -192,7 +192,7 @@ class MonitorSQL:
         for table in tables:
             # Get dates for x axis labels
             data = self.get_table(table, ['Price', 'Date'])
-            dates = [d[1] for d in data]
+            dates = ['{0}/{1}'.format(d[1].day, d[1].month) for d in data]
             plt.plot([d[0]*self.stocks[table] for d in data], label=table)
 
         date_indices = []
@@ -213,7 +213,7 @@ class MonitorSQL:
 
         # x axis labels
         plt.xticks([d[1] for d in date_indices],
-                   [d[0][:-5] for d in date_indices],
+                   [d[0] for d in date_indices],
                    rotation='vertical')
 
         plt.show()
