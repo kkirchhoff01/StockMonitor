@@ -33,7 +33,7 @@ class MonitorSQL:
     # Function to insert attributes into table
     def insert_quote(self, stock_name, price):
         # Check to make sure proper data is being passed
-        assert(self.stocks.has_key(stock_name))
+        assert(self.stocks.get(stock_name) is not None)
         assert(isinstance(price, float))
 
         self.curr.execute("""INSERT INTO {0} (Time, Date, Price) VALUES
@@ -131,7 +131,8 @@ class MonitorSQL:
 
         # If the monitor is restarted on the same day
         if str(self.get_last_quote('Date')) == time.strftime("%Y-%m-%d", now):
-            last_quote = str(self.get_last_quote('Time'))  # Get time of last quote
+            # Get time of last quote as a string (from datetime object)
+            last_quote = str(self.get_last_quote('Time'))
 
             # Get last quote time in integer form
             hour, minute, second = map(lambda x: int(x), last_quote.split(':'))
