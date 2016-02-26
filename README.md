@@ -1,15 +1,21 @@
 # StockMonitor
-Program to fetch and store stock quotes from Yahoo! finance. It can store the quotes in CSV files or an SQLite database.
+Program to fetch and store stock quotes from Yahoo! finance. It can store the quotes in CSV files, a MySQL database, or a SQLite database.
 
 ## monitor_sql.py
 
-This script uses an SQLite database. I prefer this method and will update it more frequently.
+This script uses an SQL (sqlite3 or MySQL) database. I prefer this method and will update it more frequently.
 
 Each table is a unique stock symbol, which has the format:
 
-| Time   | Date   | Quote   |
+| Time   | Date   | Price   |
 | ------ | ------ | ------- |
-| H:M:S  | D/M/Y  | $XX.XX  |
+| H:M:S  | D/M/Y  |  XX.XX  |
+
+The MySQL tables also have a primary key formated similarly:
+
+|  Id    | Time   | Date   | Price   |
+| ------ | ------ | ------ | ------- |
+|   #    | H:M:S  | Y/M/D  |  XX.XX  |
 
 To run with a quote frequency of 10 minutes:
 
