@@ -130,8 +130,8 @@ class MonitorSQL:
         now = time.localtime(time.time())
 
         # If the monitor is restarted on the same day
-        if self.get_last_quote('Date') == time.strftime("%d/%m/%Y", now):
-            last_quote = self.get_last_quote('Time')  # Get time of last quote
+        if str(self.get_last_quote('Date')) == time.strftime("%Y-%m-%d", now):
+            last_quote = str(self.get_last_quote('Time'))  # Get time of last quote
 
             # Get last quote time in integer form
             hour, minute, second = map(lambda x: int(x), last_quote.split(':'))
@@ -192,7 +192,7 @@ class MonitorSQL:
         for table in tables:
             # Get dates for x axis labels
             data = self.get_table(table, ['Price', 'Date'])
-            dates = ['{0}/{1}'.format(d[1].day, d[1].month) for d in data]
+            dates = ['{0}/{1}'.format(d[1].month, d[1].day) for d in data]
             plt.plot([d[0]*self.stocks[table] for d in data], label=table)
 
         date_indices = []
