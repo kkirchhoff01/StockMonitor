@@ -40,7 +40,7 @@ class MonitorSQL:
                                 ('{1}', '{2}', {3});""".format(
                                     stock_name,
                                     time.strftime('%X'),
-                                    time.strftime("%Y/%m/%d",
+                                    time.strftime("%Y-%m-%d",
                                                   time.localtime(
                                                       time.time())),
                                     price))  # Quote
