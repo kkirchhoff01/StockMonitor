@@ -232,7 +232,6 @@ if __name__ == "__main__":
     # Monitor until script is stopped
     try:
         monitor.monitor_stocks()
-        pass
     except KeyboardInterrupt:
         monitor.stop_monitor()
         sys.exit(0)
