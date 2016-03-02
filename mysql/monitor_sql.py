@@ -1,6 +1,5 @@
 #!/usr/bin/python
-from mysql import connector
-import mysql
+import MySQLdb
 import csv
 import requests
 import time
@@ -12,17 +11,17 @@ class MonitorSQL:
         self.conn = None
         self.curr = None
         if connect_db:
-            self.conn, self.curr = self.connect(stock_db)
+            self.connect(stock_db)
 
         self.stocks = {}
         self.import_portfolio()
 
-    def connect(self, db, username='kevin', hostname='localhost'):
-        conn = connector.connect(user=username,
-                                 host=hostname,
-                                 database=db)
+    def connect(self, database, username='kevin', hostname='localhost'):
+        self.conn = MySQLdb.connect(user=username,
+                                    host=hostname,
+                                    db=database)
 
-        return conn, conn.cursor()
+        self.curr = self.conn.cursor()
 
     def import_portfolio(self, file_path='portfolio.csv'):
         with open(file_path) as csvfile:
@@ -31,19 +30,23 @@ class MonitorSQL:
                 self.stocks[row[0]] = int(row[1])
 
     # Function to insert attributes into table
-    def insert_quote(self, stock_name, price):
+    def insert_quote(self, stock_name, price, curr_time):
         # Check to make sure proper data is being passed
         assert(self.stocks.get(stock_name) is not None)
         assert(isinstance(price, float))
 
-        self.curr.execute("""INSERT INTO {0} (Time, Date, Price) VALUES
-                                ('{1}', '{2}', {3});""".format(
-                                    stock_name,
-                                    time.strftime('%X'),
-                                    time.strftime("%Y-%m-%d",
-                                                  time.localtime(
-                                                      time.time())),
-                                    price))  # Quote
+        try:
+            self.curr.execute("""INSERT INTO {0} (Time, Date, Price) VALUES
+                                    ('{1}', '{2}', {3});""".format(
+                                        stock_name,
+                                        time.strftime('%X', time.localtime(
+                                                             curr_time)),
+                                        time.strftime("%Y-%m-%d",
+                                                      time.localtime(
+                                                          curr_time)),
+                                        price))  # Quote
+        except connector.errors.OperationalError:
+            self.connect('stocks')
 
     # Format url to get quote from Yahoo! finance
     # Default options are to recieve the symbol and price
@@ -82,7 +85,7 @@ class MonitorSQL:
         for line in csv.reader(results.splitlines(), delimiter=','):
             # Parse the symbol and price (remove quotes from symbol)
             try:
-                self.insert_quote(line[0], float(line[1]))
+                self.insert_quote(line[0], float(line[1]), time.time())
 
             # Yahoo sometimes returns bad data
             # Running get_data again solves the problem
