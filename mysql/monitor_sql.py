@@ -35,18 +35,18 @@ class MonitorSQL:
         assert(self.stocks.get(stock_name) is not None)
         assert(isinstance(price, float))
 
-        try:
-            self.curr.execute("""INSERT INTO {0} (Time, Date, Price) VALUES
-                                    ('{1}', '{2}', {3});""".format(
-                                        stock_name,
-                                        time.strftime('%X', time.localtime(
-                                                             curr_time)),
-                                        time.strftime("%Y-%m-%d",
-                                                      time.localtime(
-                                                          curr_time)),
-                                        price))  # Quote
-        except connector.errors.OperationalError:
-            self.connect('stocks')
+        # try:
+        self.curr.execute("""INSERT INTO {0} (Time, Date, Price) VALUES
+                                ('{1}', '{2}', {3});""".format(
+                                    stock_name,
+                                    time.strftime('%X', time.localtime(
+                                                         curr_time)),
+                                    time.strftime("%Y-%m-%d",
+                                                  time.localtime(
+                                                      curr_time)),
+                                    price))  # Quote
+        # except connector.errors.OperationalError:
+        #     self.connect('stocks')
 
     # Format url to get quote from Yahoo! finance
     # Default options are to recieve the symbol and price
@@ -173,6 +173,9 @@ class MonitorSQL:
                     self.get_data(url)
                     # Commit transaction at end of day
                     self.conn.commit()
+
+            else:
+                self.conn.ping(True)
 
             # Find how long loop took to process
             process_time = time.time() - begin
