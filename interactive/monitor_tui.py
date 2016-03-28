@@ -1,14 +1,26 @@
 #!/usr/bin/python
-import MySQLdb
 import curses
 import csv
+import sys
+import traceback
 import requests
 import time
-from matplotlib import pyplot as plt
+import logging
 
 
 class MonitorTUI:
     def __init__(self):
+        self.options = [("Ticker", 's'),
+                        ("Last", 'l1'),
+                        ("Change", 'c1'),
+                        ("Change (%)", 'p2'),
+                        ("Low", 'g'),
+                        ("High", 'h'),
+                        ("Volume", 'v')]
+        logging.basicConfig(filename='log/monitor.log',
+                            format='%(levelname)s: %(message)s',
+                            level=logging.DEBUG)
+
         try:
             # Init Screen
             self.stdscr = curses.initscr()
@@ -16,7 +28,6 @@ class MonitorTUI:
             curses.cbreak()
             curses.noecho()
             self.stdscr.nodelay(1)
-            self.last = {}
             self.maxy, self.maxx = self.stdscr.getmaxyx()
             # Init color pairs
             curses.start_color()
@@ -31,6 +42,7 @@ class MonitorTUI:
         except:
             self.end_session()
             traceback.print_exc()
+            logging.warning('Curses failed to init')
             sys.exit(1)
 
     # Get portfolio
@@ -39,70 +51,22 @@ class MonitorTUI:
             csvreader = csv.reader(csvfile, delimiter=',')
             for row in csvreader:
                 self.stocks[row[0]] = int(row[1])
-                self.last[row[0]] = 0.0
-
-    # Add string containing labels
-    def add_title(self):
-        self.stdscr.addstr("Symbol" + " "*(self.maxx//4 - 6) +
-                           "Price" + " "*(self.maxx//4 - 5) +
-                           "Change" + " "*(self.maxx//4 - 6) +
-                           "Time", curses.color_pair(3)
-                           )
-        if not self.is_open():
-            self.stdscr.addstr(" (Market closed)")
-        self.stdscr.addstr("\n")
-
-        self.stdscr.addstr("_"*(self.maxx) + "\n")
-        self.stdscr.refresh()
-
-    def add_price(self, price, change, colorpair):
-        self.stdscr.addstr(price, curses.color_pair(colorpair))
-        # Evenly space strings
-        self.stdscr.addstr(" "*(self.maxx//4 - len(price)))
-        self.stdscr.addstr(change, curses.color_pair(colorpair))
-
-    def update_screen(self, symbol, price, change, direction):
-        # Add symbol
-        self.stdscr.addstr(symbol + " "*(self.maxx//4 - len(symbol)),
-                           curses.color_pair(3))
-
-        # Add price change with red/green/white for up/down/no change
-        if direction == 'up':
-            self.add_price(price, change, 2)
-        elif direction == 'down':
-            self.add_price(price, change, 1)
-        else:
-            self.add_price(price, change, 3)
-
-        # Add time
-        self.stdscr.addstr(" "*(self.maxx//4-len(change)) +
-                           time.strftime('%X', time.localtime(
-                                                 time.time())) + "\n",
-                           curses.color_pair(3))
-
-        self.stdscr.refresh()
 
     # Format url to get quote from Yahoo! finance
     # Default options are to recieve the symbol and price
-    def format_data(self, options=["s", "l1"]):
-        url = "http://finance.yahoo.com/d/quotes.csv?s="
+    def format_data(self):
+        base_url = "http://finance.yahoo.com/d/quotes.csv"
+        url = "{0}?s=".format(base_url)
 
         # Add stock symbols to URL
         for key in self.stocks.keys():
             url = url + "{0}+".format(key)
 
         # Add options to URL (and remove extra '+'
-        url = "{0}&f={1}".format(url[:-1], ''.join(options))
+        url = "{0}&f={1}".format(url[:-1],
+                                 ''.join([o[1] for o in self.options]))
 
         return url
-
-    # Get local time
-    def get_time(self, tm):  # tm: index of time attribute
-        try:
-            return time.localtime(time.time())[tm]
-        except IndexError:
-            # Return complete time object if tm index is out of range
-            return time.localtime(time.time())
 
     # Return True/False if market is open/closed
     def is_open(self):
@@ -110,6 +74,44 @@ class MonitorTUI:
         return(now[6] < 5 and
                (9 <= now[3] < 15 or
                (now[3] == 8 and now[4] >= 30)))
+
+    # Add string containing labels
+    def add_title(self):
+        self.stdscr.addstr("Time: " +
+                           time.strftime('%X', time.localtime(
+                                                 time.time())) + " CST ")
+        if not self.is_open():
+            self.stdscr.addstr(" (Market closed)")
+
+        self.stdscr.addstr("\n"*2)
+        for option in self.options:
+            self.stdscr.addstr(option[0] +
+                               " "*(self.maxx//len(self.options) -
+                                    len(option[0])))
+
+        self.stdscr.addstr("\n")
+
+        self.stdscr.addstr("_"*(self.maxx) + "\n")
+        self.stdscr.refresh()
+
+    def update_screen(self, data, direction):
+        data_size = len(data)
+        # Add symbol
+
+        self.stdscr.addstr(data[0] + " "*(self.maxx//data_size - len(data[0])),
+                           curses.color_pair(3))
+
+        for d in data[1:4]:
+            self.stdscr.addstr(d, curses.color_pair(direction))
+            self.stdscr.addstr(" "*(self.maxx//data_size - len(d)))
+
+        for d in data[4:]:
+            self.stdscr.addstr(d + " "*(self.maxx//data_size - len(d)),
+                               curses.color_pair(3))
+
+        self.stdscr.addstr("\n")
+
+        self.stdscr.refresh()
 
     # Retrieve quote from Yahoo! finance and display
     def get_data(self, url):
@@ -119,25 +121,30 @@ class MonitorTUI:
         self.add_title()
 
         for line in csv.reader(results.splitlines(), delimiter=','):
-            # Parse the symbol and price (remove quotes from symbol)
-            try:
-                direction = 'up'  # Assume no change is up
-                # Calculate change
-                change = (self.last[line[0]] - float(line[1]))
-                # Get direction from up/down change
-                if change > 0:
-                    direction = 'up'
-                elif change < 0:
-                    direction = 'down'
+            # Find direction of quote price
+            # 3: No change, 2: increase, 1: decrease
+            direction = 3  # Assume no change
+            if line[2][0] == '+':
+                direction = 2
+            elif line[2][0] == '-':
+                direction = 1
 
-                # Add data to screen
-                self.update_screen(line[0], line[1], str(change), direction)
-                # Update last quote price
-                self.last[line[0]] = float(line[1])
+            # Add data to screen
+            self.update_screen(line, direction)
 
-            # Yahoo sometimes returns bad data
-            except:
-                pass
+    # Get stock ticker from input
+    def get_ticker(self):
+        self.stdscr.clear()
+        self.stdscr.addstr("Input ticker: ")
+        self.stdscr.refresh()
+        self.stdscr.nodelay(0)
+
+        curses.echo()
+        ticker = self.stdscr.getstr()
+        # Check for proper symbol
+        curses.noecho()
+        self.stdscr.nodelay(1)
+        return ticker.upper()
 
     # Main function
     def run(self):
@@ -146,9 +153,35 @@ class MonitorTUI:
 
         # Infinite loop
         while 1:
+            # Interactive portfolio managing
+            ch = self.stdscr.getch()
+            # Quit on 'q' pressed
+            if ch == ord('q'):
+                self.end_session()
+                logging.info('System exit from curses input')
+                sys.exit(0)
+
+            # Add stock ticker
+            elif ch == ord('+'):
+                ticker = self.get_ticker()
+                if ticker is not None:
+                    # Default price set to $0
+                    self.stocks[ticker] = 0.0
+                    # Reformat URL with new ticker
+                    url = self.format_data()
+                    logging.info('Stock added')
+
+            # Remove ticker
+            elif ch == ord('-'):
+                ticker = self.get_ticker()
+                if ticker in self.stocks.keys():
+                    del self.stocks[ticker]
+                    url = self.format_data()
+                    logging.info('Stock removed')
+
             self.get_data(url)
-            # Sleep for 5 seconds before getting new data
-            time.sleep(5)
+            # Sleep for .5 seconds before getting new data
+            time.sleep(0.01)
 
     # Properly end session
     def end_session(self):
@@ -156,21 +189,21 @@ class MonitorTUI:
         curses.echo()
         curses.nocbreak()
         curses.endwin()
+        logging.info('Curses exit')
 
 if __name__ == "__main__":
-    import sys
-    import traceback
-
     # Init monitor
     monitor = MonitorTUI()
 
     # Monitor until script is stopped
     try:
         monitor.run()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt, SystemExit:
         monitor.end_session()
+        logging.info('Normal system exit')
         sys.exit(0)
     except:
         monitor.end_session()
-        traceback.print_exc()
+        logging.warning('Abnormal system exit')
+        # traceback.print_exc()
         sys.exit(1)
