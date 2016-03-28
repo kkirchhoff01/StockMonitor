@@ -6,6 +6,7 @@ import traceback
 import requests
 import time
 import logging
+import os
 
 
 class MonitorTUI:
@@ -17,7 +18,12 @@ class MonitorTUI:
                         ("Low", 'g'),
                         ("High", 'h'),
                         ("Volume", 'v')]
-        logging.basicConfig(filename='log/monitor.log',
+
+        log_path = os.path.join(os.getcwd(), 'log')
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+
+        logging.basicConfig(filename=log_path + 'monitor.log',
                             format='%(levelname)s: %(message)s',
                             level=logging.DEBUG)
 
@@ -29,6 +35,7 @@ class MonitorTUI:
             curses.noecho()
             self.stdscr.nodelay(1)
             self.maxy, self.maxx = self.stdscr.getmaxyx()
+            curses.curs_set(0)
             # Init color pairs
             curses.start_color()
             curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
